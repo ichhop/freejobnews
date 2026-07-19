@@ -1,0 +1,42 @@
+[
+  {
+    "source": "SSC",
+    "org": "Staff Selection Commission",
+    "post_title": "Combined Graduate Level (CGL) Examination 2026",
+    "qualification": "Graduate",
+    "vacancies": 2423,
+    "last_date": "2026-07-20",
+    "apply_link": "https://ssc.nic.in/",
+    "notification_pdf": "https://ssc.nic.in/notices/cgl-2026.pdf"
+  },
+  {
+    "source": "WBP",
+    "org": "West Bengal Police",
+    "post_title": "Constable Recruitment — Various Districts",
+    "qualification": "12th Pass",
+    "vacancies": 1128,
+    "last_date": "2026-07-23",
+    "apply_link": "https://wbpolice.gov.in/",
+    "notification_pdf": "https://wbpolice.gov.in/notices/constable-2026.pdf"
+  },
+  {
+    "source": "IBPS",
+    "org": "IBPS",
+    "post_title": "Clerk (CRP-XV) Online Recruitment",
+    "qualification": "Graduate",
+    "vacancies": 6635,
+    "last_date": "2026-07-20",
+    "apply_link": "https://ibps.in/",
+    "notification_pdf": "https://ibps.in/notices/clerk-crp-xv.pdf"
+  },
+  {
+    "source": "RRB",
+    "org": "Indian Railways",
+    "post_title": "Group D Level-1 Recruitment 2026",
+    "qualification": "10th Pass",
+    "vacancies": 32438,
+    "last_date": "2026-08-02",
+    "apply_link": "https://indianrailways.gov.in/",
+    "notification_pdf": "https://indianrailways.gov.in/notices/group-d-2026.pdf"
+  }
+]

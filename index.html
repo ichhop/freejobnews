@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SarkariScan — Government Job Alerts, Updated Hourly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0F1419;
+    --surface: #161D26;
+    --surface-hover: #1C2530;
+    --border: #232B36;
+    --text: #E7EAEE;
+    --text-muted: #8A94A3;
+    --accent: #E8871E;
+    --accent-dim: #6B4A25;
+    --green: #1B7A4D;
+    --green-bright: #2FBE7F;
+    --red: #D14343;
+    --amber: #D1A63A;
+    --radius: 8px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    line-height:1.5;
+  }
+  a{color:inherit; text-decoration:none;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Space Grotesk',sans-serif;}
+
+  /* ---------- Header ---------- */
+  header{
+    border-bottom:1px solid var(--border);
+    padding:14px 28px;
+    display:flex;
+    align-items:center;
+    gap:24px;
+    position:sticky;
+    top:0;
+    background:rgba(15,20,25,0.92);
+    backdrop-filter:blur(8px);
+    z-index:50;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:18px;
+    letter-spacing:-0.02em;
+  }
+  .logo .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+  nav{display:flex; gap:20px; font-size:13px; color:var(--text-muted); flex:1;}
+  nav a:hover{color:var(--text);}
+  .search-wrap{
+    flex:1;
+    max-width:420px;
+    position:relative;
+  }
+  .search-wrap input{
+    width:100%;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:8px 12px 8px 32px;
+    color:var(--text);
+    font-size:13px;
+    font-family:'Inter',sans-serif;
+  }
+  .search-wrap input:focus{outline:none; border-color:var(--accent);}
+  .search-wrap::before{
+    content:"⌕";
+    position:absolute;
+    left:11px; top:50%; transform:translateY(-50%);
+    color:var(--text-muted);
+    font-size:15px;
+  }
+  .post-alert-btn{
+    background:var(--accent);
+    color:#12100C;
+    font-weight:600;
+    font-size:13px;
+    padding:8px 16px;
+    border-radius:6px;
+    white-space:nowrap;
+  }
+
+  /* ---------- Ticker ---------- */
+  .ticker{
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    padding:7px 28px;
+    font-size:12px;
+    color:var(--text-muted);
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .ticker .live-dot{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--green-bright);
+    display:inline-block;
+    animation:pulse 1.6s infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:1;} 50%{opacity:0.35;}
+  }
+  .ticker strong{color:var(--text); font-weight:500;}
+
+  /* ---------- Layout ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns:220px 1fr 260px;
+    gap:0;
+    max-width:1400px;
+    margin:0 auto;
+  }
+  @media (max-width:1000px){
+    .layout{grid-template-columns:1fr;}
+    .sidebar, .rightbar{display:none;}
+  }
+
+  /* ---------- Sidebar filters ---------- */
+  .sidebar{
+    padding:24px 16px;
+    border-right:1px solid var(--border);
+    min-height:100vh;
+  }
+  .filter-group{margin-bottom:26px;}
+  .filter-group h4{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--text-muted);
+    margin-bottom:10px;
+    font-weight:600;
+  }
+  .chip-list{display:flex; flex-direction:column; gap:2px;}
+  .chip-list.scrollable{
+    max-height:280px;
+    overflow-y:auto;
+    padding-right:4px;
+  }
+  .chip-list.scrollable::-webkit-scrollbar{width:5px;}
+  .chip-list.scrollable::-webkit-scrollbar-thumb{background:var(--border); border-radius:3px;}
+  .chip{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 8px;
+    border-radius:5px;
+    font-size:13px;
+    color:var(--text-muted);
+    cursor:pointer;
+  }
+  .chip:hover{background:var(--surface-hover); color:var(--text);}
+  .chip.active{background:var(--accent-dim); color:var(--accent); font-weight:500;}
+  .chip span.count{font-family:'JetBrains Mono',monospace; font-size:11px; opacity:0.7;}
+
+  /* ---------- Main list ---------- */
+  .main{padding:20px 24px;}
+  .main-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:16px;
+  }
+  .main-head h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:20px;
+    font-weight:600;
+  }
+  .main-head .count{
+    font-size:12px;
+    color:var(--text-muted);
+    font-family:'JetBrains Mono',monospace;
+  }
+  .sort-select{
+    background:var(--surface);
+    border:1px solid var(--border);
+    color:var(--text-muted);
+    font-size:12px;
+    padding:5px 8px;
+    border-radius:5px;
+  }
+
+  .job-row{
+    display:grid;
+    grid-template-columns:40px 1fr 130px 110px 210px;
+    align-items:center;
+    gap:14px;
+    padding:14px 12px;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    margin-bottom:8px;
+    background:var(--surface);
+    transition:border-color 0.12s, background 0.12s;
+    cursor:pointer;
+    overflow:hidden;
+  }
+  .job-row > *{min-width:0;}
+  .job-row:hover{
+    background:var(--surface-hover);
+    border-color:#33404F;
+  }
+  @media (max-width:760px){
+    .job-row{
+      grid-template-columns:40px 1fr;
+      grid-template-areas:
+        "logo title"
+        "logo badge"
+        "actions actions";
+      row-gap:10px;
+    }
+    .org-logo{grid-area:logo;}
+    .job-title-block{grid-area:title;}
+    .job-title-block .post{white-space:normal; overflow:visible; text-overflow:clip;}
+    .deadline-badge{grid-area:badge; justify-self:start;}
+    .job-actions{grid-area:actions;}
+    .job-row .col-vac{display:none;}
+  }
+
+  .org-logo{
+    width:36px; height:36px;
+    border-radius:7px;
+    background:linear-gradient(135deg, var(--accent-dim), #2A2016);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--accent);
+  }
+  .job-title-block .post{
+    font-size:19px;
+    font-weight:600;
+    color:var(--text);
+    margin-bottom:3px;
+    white-space:nowrap;
+  }
+  .job-title-block .org{
+    font-size:12.5px;
+    color:var(--text-muted);
+  }
+  .tag-row{
+    display:flex;
+    gap:6px;
+    margin-top:6px;
+  }
+  .tag{
+    font-size:10.5px;
+    padding:2px 7px;
+    border-radius:4px;
+    background:#1D2530;
+    color:var(--text-muted);
+    border:1px solid var(--border);
+  }
+  .col-vac{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--text-muted);
+    text-align:center;
+  }
+  .col-vac .num{color:var(--text); font-weight:600; display:block; font-size:15px;}
+  .col-vac .lbl{font-size:10px; text-transform:uppercase; letter-spacing:0.05em;}
+
+  .deadline-badge{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    font-weight:600;
+    padding:5px 9px;
+    border-radius:5px;
+    text-align:center;
+    white-space:nowrap;
+  }
+  .deadline-badge.urgent{background:rgba(209,67,67,0.14); color:var(--red); border:1px solid rgba(209,67,67,0.3);}
+  .deadline-badge.soon{background:rgba(209,166,58,0.14); color:var(--amber); border:1px solid rgba(209,166,58,0.3);}
+  .deadline-badge.open{background:rgba(47,190,127,0.12); color:var(--green-bright); border:1px solid rgba(47,190,127,0.28);}
+
+  .job-actions{
+    display:flex;
+    flex-direction:row-reverse;
+    gap:8px;
+    justify-content:flex-start;
+  }
+  .apply-now-btn{
+    display:inline-block;
+    text-align:center;
+    background:var(--accent);
+    color:#12100C;
+    font-size:12.5px;
+    font-weight:700;
+    padding:8px 14px;
+    border-radius:4px;
+    white-space:nowrap;
+  }
+  .apply-now-btn:hover{
+    background:#F59A38;
+  }
+  .details-btn{
+    text-align:center;
+    background:rgba(209,67,67,0.1);
+    border:1px solid rgba(209,67,67,0.3);
+    color:var(--red);
+    font-size:12px;
+    font-weight:600;
+    padding:6px 14px;
+    border-radius:4px;
+    white-space:nowrap;
+  }
+  .job-row:hover .details-btn{
+    border-color:var(--red);
+    background:rgba(209,67,67,0.16);
+  }
+  @media (max-width:760px){
+    .job-actions{
+      flex-direction:row;
+    }
+    .apply-now-btn{
+      flex:1;
+      padding:11px 14px;
+    }
+    .details-btn{
+      flex:0 0 auto;
+      padding:11px 14px;
+    }
+  }
+
+  /* ---------- Right sidebar ---------- */
+  .rightbar{
+    padding:24px 16px;
+    border-left:1px solid var(--border);
+    min-height:100vh;
+  }
+  .widget{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px;
+    margin-bottom:16px;
+  }
+  .widget h4{
+    font-size:12px;
+    font-weight:600;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .widget h4 .flame{color:var(--red);}
+  .mini-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:7px 0;
+    border-bottom:1px solid var(--border);
+    font-size:12.5px;
+  }
+  .mini-row:last-child{border-bottom:none;}
+  .mini-row .t{color:var(--text); font-weight:500;}
+  .mini-row .d{font-family:'JetBrains Mono',monospace; color:var(--red); font-size:11px;}
+  .mini-row .d.new{color:var(--accent);}
+  .mini-row .d.out{color:var(--green-bright);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="dot"></span>SarkariScan</div>
+  <nav>
+    <a href="#">Latest Jobs</a>
+    <a href="#">Admit Cards</a>
+    <a href="#">Results</a>
+    <a href="#">Answer Keys</a>
+    <a href="#">Syllabus</a>
+  </nav>
+  <div class="search-wrap">
+    <input type="text" placeholder="Search by post, department, or state…">
+  </div>
+  <div class="post-alert-btn">Get Daily Alerts</div>
+</header>
+
+<div class="ticker">
+  <span class="live-dot"></span>
+  <span><strong>Live:</strong> 41 new notifications scraped in the last 6 hours · Last sync 12 min ago</span>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="filter-group">
+      <h4>Qualification</h4>
+      <div class="chip-list">
+        <div class="chip active">10th / 12th Pass <span class="count">312</span></div>
+        <div class="chip">Graduate <span class="count">540</span></div>
+        <div class="chip">Post Graduate <span class="count">198</span></div>
+        <div class="chip">Diploma / ITI <span class="count">147</span></div>
+        <div class="chip">B.Tech / Engineering <span class="count">203</span></div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <h4>Job Type</h4>
+      <div class="chip-list">
+        <div class="chip">Central Govt <span class="count">421</span></div>
+        <div class="chip">State Govt <span class="count">689</span></div>
+        <div class="chip">Bank <span class="count">94</span></div>
+        <div class="chip">Railway <span class="count">67</span></div>
+        <div class="chip">Defence <span class="count">51</span></div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <h4>State</h4>
+      <div class="chip-list scrollable">
+        <div class="chip">India (All India) <span class="count">401</span></div>
+        <div class="chip">Andhra Pradesh <span class="count">58</span></div>
+        <div class="chip">Arunachal Pradesh <span class="count">6</span></div>
+        <div class="chip">Assam <span class="count">34</span></div>
+        <div class="chip">Bihar <span class="count">176</span></div>
+        <div class="chip">Chhattisgarh <span class="count">27</span></div>
+        <div class="chip">Goa <span class="count">9</span></div>
+        <div class="chip">Gujarat <span class="count">61</span></div>
+        <div class="chip">Haryana <span class="count">48</span></div>
+        <div class="chip">Himachal Pradesh <span class="count">17</span></div>
+        <div class="chip">Jharkhand <span class="count">33</span></div>
+        <div class="chip">Karnataka <span class="count">72</span></div>
+        <div class="chip">Kerala <span class="count">45</span></div>
+        <div class="chip">Madhya Pradesh <span class="count">64</span></div>
+        <div class="chip">Maharashtra <span class="count">122</span></div>
+        <div class="chip">Manipur <span class="count">5</span></div>
+        <div class="chip">Meghalaya <span class="count">4</span></div>
+        <div class="chip">Mizoram <span class="count">3</span></div>
+        <div class="chip">Nagaland <span class="count">4</span></div>
+        <div class="chip">Odisha <span class="count">39</span></div>
+        <div class="chip">Punjab <span class="count">42</span></div>
+        <div class="chip">Rajasthan <span class="count">83</span></div>
+        <div class="chip">Sikkim <span class="count">3</span></div>
+        <div class="chip">Tamil Nadu <span class="count">69</span></div>
+        <div class="chip">Telangana <span class="count">51</span></div>
+        <div class="chip">Tripura <span class="count">8</span></div>
+        <div class="chip">Uttar Pradesh <span class="count">210</span></div>
+        <div class="chip">Uttarakhand <span class="count">14</span></div>
+        <div class="chip">West Bengal <span class="count">134</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN LIST -->
+  <main class="main">
+    <div class="main-head">
+      <h1>Latest Government Job Notifications</h1>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <span class="count">1,411 open postings</span>
+        <select class="sort-select">
+          <option>Newest first</option>
+          <option>Closing soonest</option>
+          <option>Most vacancies</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="job-list"></div>
+  </main>
+
+  <!-- RIGHT WIDGETS -->
+  <aside class="rightbar">
+    <div class="widget">
+      <h4><span class="admit-icon">🎫</span> Latest Admit Cards</h4>
+      <div class="mini-row"><span class="t">SSC CHSL Tier-I Admit Card</span><span class="d new">New</span></div>
+      <div class="mini-row"><span class="t">IBPS RRB Office Assistant</span><span class="d new">New</span></div>
+      <div class="mini-row"><span class="t">Bihar Police Constable PET</span><span class="d new">New</span></div>
+      <div class="mini-row"><span class="t">UPSC Civil Services (Pre)</span></div>
+    </div>
+    <div class="widget">
+      <h4><span class="flame">🔥</span> Closing in 24 Hours</h4>
+      <div class="mini-row"><span class="t">SSC CGL 2026</span><span class="d">1d left</span></div>
+      <div class="mini-row"><span class="t">IBPS Clerk Recruitment</span><span class="d">1d left</span></div>
+      <div class="mini-row"><span class="t">UP Police Constable</span><span class="d">18h left</span></div>
+    </div>
+    <div class="widget">
+      <h4><span class="result-icon">📋</span> Results Published</h4>
+      <div class="mini-row"><span class="t">RRB NTPC Final Result</span><span class="d out">Out</span></div>
+      <div class="mini-row"><span class="t">SSC MTS Tier-I Result</span><span class="d out">Out</span></div>
+      <div class="mini-row"><span class="t">WBPSC Clerkship Result</span><span class="d out">Out</span></div>
+      <div class="mini-row"><span class="t">IBPS PO Mains Result</span></div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+// Demo/fallback data — used only if jobs_export.json isn't reachable
+// (e.g. opening this file directly with file:// instead of through a server)
+const fallbackJobs = [
+  {org:"SSC", initials:"SSC", post:"Combined Graduate Level (CGL) Examination 2026", tags:["Central Govt","Graduate","All India"], vac:2423, deadline:1, type:"urgent"},
+  {org:"West Bengal Police", initials:"WBP", post:"Constable Recruitment — Various Districts", tags:["State Govt","12th Pass","West Bengal"], vac:1128, deadline:4, type:"soon"},
+  {org:"IBPS", initials:"IB", post:"Clerk (CRP-XV) Online Recruitment", tags:["Bank","Graduate","All India"], vac:6635, deadline:1, type:"urgent"},
+  {org:"Indian Railways / RRB", initials:"RRB", post:"Group D Level-1 Recruitment 2026", tags:["Railway","10th Pass","All India"], vac:32438, deadline:14, type:"open"},
+  {org:"UPSSSC", initials:"UP", post:"Junior Assistant & Clerk Recruitment", tags:["State Govt","Graduate","Uttar Pradesh"], vac:874, deadline:6, type:"soon"},
+  {org:"Bihar SSC (BSSC)", initials:"BS", post:"Inter Level Combined Competitive Exam", tags:["State Govt","12th Pass","Bihar"], vac:1234, deadline:21, type:"open"},
+  {org:"DSSSB", initials:"DS", post:"Trained Graduate Teacher (TGT) Vacancy", tags:["State Govt","Graduate","Delhi"], vac:614, deadline:9, type:"soon"},
+  {org:"Indian Army", initials:"IA", post:"Agniveer Recruitment Rally 2026", tags:["Defence","10th/12th Pass","All India"], vac:19000, deadline:30, type:"open"},
+];
+
+// Turns a raw row from scraper.py's jobs_export.json into what the row
+// template below expects (initials, tags, deadline days, urgency type).
+function normalizeScrapedJob(row){
+  const org = row.org || "Government";
+  const initials = org
+    .split(/\s+/)
+    .map(w => w[0])
+    .join('')
+    .slice(0, 3)
+    .toUpperCase();
+
+  let deadlineDays = null;
+  let type = "open";
+  if (row.last_date){
+    const last = new Date(row.last_date);
+    if (!isNaN(last)){
+      const diffMs = last.setHours(23,59,59,999) - Date.now();
+      deadlineDays = Math.max(0, Math.ceil(diffMs / 86400000));
+      type = deadlineDays <= 2 ? "urgent" : deadlineDays <= 7 ? "soon" : "open";
+    }
+  }
+
+  const tags = [row.source, row.qualification].filter(Boolean);
+
+  return {
+    org,
+    initials,
+    post: row.post_title,
+    tags,
+    vac: row.vacancies || 0,
+    deadline: deadlineDays,
+    type,
+    applyLink: row.notification_pdf || row.apply_link || "#",
+  };
+}
+
+async function loadJobs(){
+  try{
+    const res = await fetch('jobs_export.json', { cache: "no-store" });
+    if (!res.ok) throw new Error("not found");
+    const raw = await res.json();
+    if (!Array.isArray(raw) || raw.length === 0) throw new Error("empty");
+    return raw.map(normalizeScrapedJob);
+  }catch(err){
+    console.warn("Falling back to demo data — jobs_export.json not reachable:", err.message);
+    return fallbackJobs;
+  }
+}
+
+function badgeHTML(days, type){
+  if (days === null || days === undefined){
+    return `<div class="deadline-badge open">Open</div>`;
+  }
+  const label = days === 1 ? "1 day left" : days + " days left";
+  return `<div class="deadline-badge ${type}">${label}</div>`;
+}
+
+function renderJobs(jobs){
+  const list = document.getElementById('job-list');
+  list.innerHTML = jobs.map(j => `
+    <div class="job-row">
+      <div class="org-logo">${j.initials}</div>
+      <div class="job-title-block">
+        <div class="post">${j.post}</div>
+        <div class="org">${j.org}</div>
+        <div class="tag-row">${j.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+      </div>
+      <div class="col-vac">
+        <span class="num">${j.vac.toLocaleString('en-IN')}</span>
+        <span class="lbl">Vacancies</span>
+      </div>
+      ${badgeHTML(j.deadline, j.type)}
+      <div class="job-actions">
+        <a class="apply-now-btn" href="${j.applyLink || '#'}" target="_blank" rel="noopener">Apply Now</a>
+        <div class="details-btn">View Details</div>
+      </div>
+    </div>
+  `).join('');
+  fitTitlesOneLine();
+}
+
+loadJobs().then(renderJobs);
+
+function fitTitlesOneLine(){
+  const isDesktop = window.innerWidth > 760;
+  document.querySelectorAll('.job-title-block .post').forEach(el => {
+    if (!isDesktop){
+      el.style.fontSize = '';
+      return;
+    }
+    let size = 19;
+    el.style.fontSize = size + 'px';
+    const minSize = 12.5;
+    while (el.scrollWidth > el.clientWidth && size > minSize){
+      size -= 0.5;
+      el.style.fontSize = size + 'px';
+    }
+  });
+}
+
+fitTitlesOneLine();
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(fitTitlesOneLine, 150);
+});
+</script>
+
+</body>
+</html>
